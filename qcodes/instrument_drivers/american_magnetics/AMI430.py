@@ -234,6 +234,12 @@ class AMI430(IPInstrument):
         self.add_parameter('is_quenched',
                            get_cmd='QU?',
                            val_mapping={True: 1, False: 0})
+        # Add inductance of the coil 
+        self.add_parameter('inductance',
+                            unit='H',
+                            get_cmd='IND?',
+                            set_cmd='CONF:IND {}')
+
         self.add_function('reset_quench', call_cmd='QU 0')
         self.add_function('set_quenched', call_cmd='QU 1')
         self.add_parameter('ramping_state',

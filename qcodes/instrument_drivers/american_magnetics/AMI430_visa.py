@@ -271,7 +271,10 @@ class AMIModel430(VisaInstrument):
         self.add_parameter(
             "ramp_rate", get_cmd=self._get_ramp_rate, set_cmd=self._set_ramp_rate
         )
-        self.add_parameter("setpoint", get_cmd="FIELD:TARG?", get_parser=float)
+        self.add_parameter("setpoint", 
+                            get_cmd="FIELD:TARG?",
+                            set_cmd='CONF:FIELD:TARG {}',
+                            get_parser=float)
         self.add_parameter(
             "is_quenched", get_cmd="QU?", val_mapping={True: 1, False: 0}
         )
@@ -301,6 +304,18 @@ class AMIModel430(VisaInstrument):
             vals=Numbers(0, 10),
             set_cmd=None,
         )
+        # Add inductance of the coil 
+        self.add_parameter('inductance',
+                            unit='H',
+                            get_cmd='IND?',
+                            set_cmd='CONF:IND {}')
+
+        # Add stability parameters
+        self.add_parameter('stability_parameter',
+                            unit='',
+                            get_cmd='STAB?',
+                            set_cmd='CONF:STAB {}',
+                            vals = Numbers(0,100))
 
         # Add persistent switch
         switch_heater = AMI430SwitchHeater(self)
@@ -317,6 +332,7 @@ class AMIModel430(VisaInstrument):
 
         self.connect_message()
 
+
     def _sleep(self, t: float) -> None:
         """
         Sleep for a number of seconds t. If we are or using
@@ -329,7 +345,6 @@ class AMIModel430(VisaInstrument):
             return
         else:
             time.sleep(t)
-
     def _can_start_ramping(self) -> bool:
         """
         Check the current state of the magnet to see if we can start ramping
